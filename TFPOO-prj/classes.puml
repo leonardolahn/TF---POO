@@ -1,0 +1,101 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "br.edu.exemplo.modelo" {
+
+    class Evento {
+        - id: String
+        - titulo: String
+        - descricao: String
+        - data: LocalDate
+        - local: String
+        - capacidade: int
+        - precoBase: BigDecimal
+        - horarioInicio: LocalTime
+        + getId(): String
+        + getData(): LocalDate
+        + getCapacidade(): int
+        + getPrecoBase(): BigDecimal
+        + isPassado(): boolean
+    }
+
+    class ModalidadeEvento {
+        - eventoId: String
+        - descontoPromocionalPercentual: int
+        - limitePromocional: int
+        + getDescontoPromocionalPercentual(): int
+        + getLimitePromocional(): int
+    }
+
+    class Venda {
+        - id: String
+        - comprador: String
+        - dataHora: LocalDateTime
+        - ingressos: List<Ingresso>
+        + getId(): String
+        + getComprador(): String
+        + getDataHora(): LocalDateTime
+        + getIngressos(): List<Ingresso>
+        + calcularValorTotal(): BigDecimal
+        + adicionarIngresso(ingresso: Ingresso): void
+    }
+
+    abstract class Ingresso {
+        # id: String
+        # participanteNome: String
+        # participanteCpf: String
+        # justificativa: String
+        + {abstract} calcularPreco(evento: Evento, modalidadeEvento: ModalidadeEvento): BigDecimal
+        + {abstract} permiteEntradaAntecipada(): boolean
+        + getId(): String
+        + getParticipanteCpf(): String
+    }
+
+    class Inteira {
+        + calcularPreco(evento: Evento, modalidadeEvento: ModalidadeEvento): BigDecimal
+        + permiteEntradaAntecipada(): boolean
+    }
+
+    class MeiaEntrada {
+        + calcularPreco(evento: Evento, modalidadeEvento: ModalidadeEvento): BigDecimal
+        + permiteEntradaAntecipada(): boolean
+    }
+
+    class VIP {
+        + calcularPreco(evento: Evento, modalidadeEvento: ModalidadeEvento): BigDecimal
+        + permiteEntradaAntecipada(): boolean
+    }
+
+    class Promocional {
+        + calcularPreco(evento: Evento, modalidadeEvento: ModalidadeEvento): BigDecimal
+        + permiteEntradaAntecipada(): boolean
+    }
+}
+
+package "br.edu.exemplo.servico" {
+    class GerenciadorEventos {
+        - eventos: List<Evento>
+        - modalidades: List<ModalidadeEvento>
+        - vendas: List<Venda>
+        + carregarDadosIniciais(): void
+        + registrarVenda(venda: Venda): void
+        + consultarDisponibilidade(eventoId: String): int
+        + listarEventosFuturos(): List<Evento>
+        + calcularArrecadacaoTotal(eventoId: String): BigDecimal
+    }
+}
+
+' Relacionamentos
+Ingresso <|-- Inteira
+Ingresso <|-- MeiaEntrada
+Ingresso <|-- VIP
+Ingresso <|-- Promociona
+
+Venda "1" *-- "1..*" Ingresso : contém >
+Venda "*" --> "1" Evento : refere-se a >
+Ingresso "*" --> "1" Evento : associado a >
+ModalidadeEvento "1" --> "1" Evento : configura >
+GerenciadorEventos o-- Evento
+GerenciadorEventos o-- ModalidadeEvento
+GerenciadorEventos o-- Venda
